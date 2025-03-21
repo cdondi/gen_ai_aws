@@ -1,0 +1,9 @@
+{
+    "inputText": "Write a short blog post about the future of generative AI.",
+    "textGenerationConfig": {
+      "maxTokenCount": 300,
+      "temperature": 0.7,
+      "topP": 0.9,
+      "stopSequences": []
+    }
+  }

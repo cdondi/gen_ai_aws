@@ -1,0 +1,122 @@
+{
+    "info": {
+      "_postman_id": "3dd1571a-bc41-4915-aaa5-600abcd12345",
+      "name": "Amazon Bedrock - Titan Text Premier",
+      "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+      {
+        "name": "Invoke Titan Text Premier (SigV4)",
+        "event": [
+          {
+            "listen": "prerequest",
+            "script": {
+              "exec": [
+                "// === CONFIGURE THESE VALUES ===",
+                "const accessKey = 'YOUR_AWS_ACCESS_KEY';",
+                "const secretKey = 'YOUR_AWS_SECRET_KEY';",
+                "const region = 'us-east-1';",
+                "const service = 'bedrock';",
+                "const modelId = 'amazon.titan-text-premier-v1:0';",
+                "",
+                "const payload = JSON.stringify({",
+                "  inputText: \"Write a blog about how generative AI is changing education.\",",
+                "  textGenerationConfig: {",
+                "    maxTokenCount: 300,",
+                "    temperature: 0.7,",
+                "    topP: 0.9,",
+                "    stopSequences: []",
+                "  }",
+                "});",
+                "",
+                "// === SIGNING ===",
+                "const moment = require('moment');",
+                "const crypto = require('crypto-js');",
+                "",
+                "const amzDate = moment.utc().format('YYYYMMDDTHHmmss') + 'Z';",
+                "const dateStamp = moment.utc().format('YYYYMMDD');",
+                "const method = 'POST';",
+                "const host = `bedrock-runtime.${region}.amazonaws.com`;",
+                "const canonicalUri = `/model/${encodeURIComponent(modelId)}/invoke`;",
+                "",
+                "const canonicalHeaders = `host:${host}\\n` + `x-amz-date:${amzDate}\\n`;",
+                "const signedHeaders = 'host;x-amz-date';",
+                "const payloadHash = crypto.SHA256(payload).toString();",
+                "",
+                "const canonicalRequest = [",
+                "  method,",
+                "  canonicalUri,",
+                "  '',",
+                "  canonicalHeaders,",
+                "  signedHeaders,",
+                "  payloadHash",
+                "].join('\\n');",
+                "",
+                "const algorithm = 'AWS4-HMAC-SHA256';",
+                "const credentialScope = `${dateStamp}/${region}/${service}/aws4_request`;",
+                "const stringToSign = [",
+                "  algorithm,",
+                "  amzDate,",
+                "  credentialScope,",
+                "  crypto.SHA256(canonicalRequest).toString()",
+                "].join('\\n');",
+                "",
+                "function getSignatureKey(key, dateStamp, regionName, serviceName) {",
+                "  const kDate = crypto.HmacSHA256(dateStamp, 'AWS4' + key);",
+                "  const kRegion = crypto.HmacSHA256(regionName, kDate);",
+                "  const kService = crypto.HmacSHA256(serviceName, kRegion);",
+                "  const kSigning = crypto.HmacSHA256('aws4_request', kService);",
+                "  return kSigning;",
+                "}",
+                "",
+                "const signingKey = getSignatureKey(secretKey, dateStamp, region, service);",
+                "const signature = crypto.HmacSHA256(stringToSign, signingKey).toString();",
+                "",
+                "const authorizationHeader = [",
+                "  `${algorithm} Credential=${accessKey}/${credentialScope}`,",
+                "  `SignedHeaders=${signedHeaders}`,",
+                "  `Signature=${signature}`",
+                "].join(', ');",
+                "",
+                "pm.environment.set('Authorization', authorizationHeader);",
+                "pm.environment.set('X-Amz-Date', amzDate);",
+                "pm.environment.set('payload', payload);"
+              ],
+              "type": "text/javascript"
+            }
+          }
+        ],
+        "request": {
+          "method": "POST",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Accept",
+              "value": "application/json"
+            },
+            {
+              "key": "X-Amz-Date",
+              "value": "{{X-Amz-Date}}"
+            },
+            {
+              "key": "Authorization",
+              "value": "{{Authorization}}"
+            }
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{{payload}}"
+          },
+          "url": {
+            "raw": "https://bedrock-runtime.us-east-1.amazonaws.com/model/amazon.titan-text-premier-v1%3A0/invoke",
+            "protocol": "https",
+            "host": ["bedrock-runtime", "us-east-1", "amazonaws", "com"],
+            "path": ["model", "amazon.titan-text-premier-v1:0", "invoke"]
+          }
+        }
+      }
+    ]
+  }
